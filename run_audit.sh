@@ -7,6 +7,9 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color (reset)
 
+# ── AWS Region ────────────────────────────────────────────────────────────────
+export AWS_DEFAULT_REGION="us-east-1"
+
 # ── Config ────────────────────────────────────────────────────────────────────
 TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
 REPORTS_DIR="reports"
@@ -163,6 +166,29 @@ else:
     print(f"  {GREEN}TOTAL CRITICAL FINDINGS: 0 — All clear{NC}")
 print(f"{BLUE}================================================{NC}\n")
 EOF
+
+# ── Send CloudWatch metric ────────────────────────────────────────────────────
+echo -e "${BLUE}Sending metrics to CloudWatch...${NC}"
+
+TOTAL_CRITICAL=$(python3 -c "
+import json
+with open('$FINAL_REPORT') as f:
+    r = json.load(f)
+print(r['total_critical'])
+")
+
+aws cloudwatch put-metric-data \
+    --namespace "AWSSecurityAuditor" \
+    --metric-name "CriticalFindings" \
+    --value "$TOTAL_CRITICAL" \
+    --unit Count \
+    --region us-east-1
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}CloudWatch metric sent — CriticalFindings: $TOTAL_CRITICAL${NC}"
+else
+    echo -e "${YELLOW}[WARN] CloudWatch metric push failed${NC}"
+fi
 
 echo -e "Completed at: $(date -u)"
 echo -e "${GREEN}Final report → $FINAL_REPORT${NC}"
