@@ -1,0 +1,12 @@
+# Never push generated reports
+reports/
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+
+# AWS credentials (just in case)
+.aws/
+*.pem
