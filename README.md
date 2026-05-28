@@ -6,35 +6,31 @@ An automated AWS cloud security auditing tool that scans an AWS account for comm
 
 ## Architecture
 
-┌─────────────────────────────────────────────────────────┐
-│                    EC2 Instance                         │
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │              Docker Container                    │   │
-│  │                                                  │   │
-│  │  run_audit.sh                                    │   │
-│  │      │                                           │   │
-│  │      ├── s3_auditor.py  ──→ S3 Buckets           │   │
-│  │      ├── iam_auditor.py ──→ IAM Users            │   │
-│  │      └── sg_auditor.py  ──→ Security Groups      │   │
-│  │                                                  │   │
-│  │  final_report.json (combined output)             │   │
-│  └──────────────────────────────────────────────────┘   │
-│                        │                                │
-│                   cron (daily 8AM UTC)                  │
-└────────────────────────┼────────────────────────────────┘
-│
-┌──────────▼──────────┐
-│     CloudWatch      │
-│  CriticalFindings   │
-│     Metric          │
-└──────────┬──────────┘
-│
-┌──────────▼──────────┐
-│    SNS Alarm        │
-│  Email Alert when   │
-│  findings >= 1      │
-└─────────────────────┘
+## Architecture
+
+```mermaid
+flowchart TD
+    A[cron - daily 8AM UTC] --> B
+
+    subgraph EC2["EC2 Instance"]
+        subgraph Docker["Docker Container"]
+            B[run_audit.sh] --> C[s3_auditor.py]
+            B --> D[iam_auditor.py]
+            B --> E[sg_auditor.py]
+            C --> F[S3 Buckets]
+            D --> G[IAM Users]
+            E --> H[Security Groups]
+            F --> I[final_report.json]
+            G --> I
+            H --> I
+        end
+    end
+
+    I --> J[CloudWatch\nCriticalFindings Metric]
+    J --> K{findings >= 1?}
+    K -->|Yes| L[SNS Email Alert]
+    K -->|No| M[No Action]
+```
 
 ---
 
