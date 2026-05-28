@@ -82,6 +82,7 @@ flowchart TD
 
 ## Project Structure
 
+```
 aws-security-auditor/
 ├── auditors/
 │   ├── s3_auditor.py       # S3 bucket misconfiguration scanner
@@ -91,6 +92,7 @@ aws-security-auditor/
 ├── Dockerfile              # Container definition
 ├── run_audit.sh            # Bash wrapper — runs all auditors
 └── README.md
+```
 
 ---
 
@@ -105,7 +107,6 @@ aws-security-auditor/
     "s3": {
       "summary": {
         "total_buckets": 3,
-        "critical": 1,
         "high": 0,
         "medium": 2,
         "ok": 0
